@@ -777,6 +777,32 @@ namespace termcolor
         return stream;
     }
 
+    // start synchronized block: https://terminfo.dev/modes/decset-2026-synchronized-output
+    inline
+    std::ostream& start_batch_update(std::ostream& stream)
+    {
+        if (_internal::is_colorized(stream))
+        {
+        #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
+            stream << "\033[?2026h";
+        #endif
+        }
+        return stream;
+    }
+
+    // end synchronized block: https://terminfo.dev/modes/decset-2026-synchronized-output
+    inline
+    std::ostream& end_batch_update(std::ostream& stream)
+    {
+        if (_internal::is_colorized(stream))
+        {
+        #if defined(TERMCOLOR_USE_ANSI_ESCAPE_SEQUENCES)
+            stream << "\033[?2026l";
+        #endif
+        }
+        return stream;
+    }
+
 
 
     //! Since C++ hasn't a way to hide something in the header from

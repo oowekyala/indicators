@@ -1,6 +1,7 @@
 
 #ifndef INDICATORS_MULTI_PROGRESS
 #define INDICATORS_MULTI_PROGRESS
+#include "termcolor.hpp"
 #include <atomic>
 #include <functional>
 #include <iostream>
@@ -65,13 +66,20 @@ private:
 public:
   void print_progress() {
     std::lock_guard<std::mutex> lock{mutex_};
+    // Wrap movement and update into a synchronized block.
+    // Modern terminals will wait until the end_batch_update
+    // sequence before repainting. This avoids glitches
+    // like cursors jumping up and down if the terminal
+    // repaints the cursor position before we are done.
+    std::cout << termcolor::start_batch_update;
     if (started_)
       move_up(count);
     for (auto &bar : bars_) {
       bar.get().print_progress(true);
       std::cout << "\n";
     }
-    std::cout << termcolor::reset;
+    std::cout << termcolor::reset 
+              << termcolor::end_batch_update;
     if (!started_)
       started_ = true;
   }
